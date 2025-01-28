@@ -1,9 +1,10 @@
-import { DoubleNavbar } from "./components/Navbar/DoubleNavbar";
-
+import MobFilterUI from "./components/MobFilterUI"; 
 function App() {
 	return (
         <>
-            <DoubleNavbar />
+            <MobFilterUI />
+            
+            
         </>
     );
 }
