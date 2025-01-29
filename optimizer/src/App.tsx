@@ -1,12 +1,11 @@
-import MobFilterUI from "./components/MobFilterUI"; 
-function App() {
-	return (
-        <>
-            <MobFilterUI />
-            
-            
-        </>
-    );
-}
+import Layout from './components/Layout';
+
+const App = () => {
+  return (
+    <div>
+      <Layout />
+    </div>
+  );
+};
 
 export default App;

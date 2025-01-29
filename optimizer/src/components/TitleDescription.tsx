@@ -1,14 +1,14 @@
 import { Stack, Title, Text } from '@mantine/core';
 
-interface TitleDescription {
+interface TitleDescriptionProps {
   title: string;
   description: string;
 }
 
-const TitleDescription = ({ title, description }: TitleDescription) => {
+const TitleDescription = ({ title, description }: TitleDescriptionProps) => {
   return (
-    <Stack gap="sm" mb="xl">
-      <Title order={2}>{title}</Title>
+    <Stack gap="sm" align="center" style={{ textAlign: 'center' }}>
+      <Title order={1} style={{ fontSize: '2.5rem' }}>{title}</Title>
       <Text color="dimmed">{description}</Text>
     </Stack>
   );
