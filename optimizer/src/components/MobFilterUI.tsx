@@ -9,7 +9,7 @@ interface MobFilterUIProps {
   onApplyFilters: (filters: FilterValues) => void;
 }
 
-const MobFilterUI = ({ locations = [], mobTypes = [], damageTypes = [], onApplyFilters }: MobFilterUIProps) => {
+const MobFilterUI = ({ locations, mobTypes, damageTypes, onApplyFilters }: MobFilterUIProps) => {
   const [filters, setFilters] = useState<FilterValues>({
     mobName: '',
     location: '',
@@ -17,62 +17,88 @@ const MobFilterUI = ({ locations = [], mobTypes = [], damageTypes = [], onApplyF
     mobDamage: '',
     minHp: undefined,
     maxHp: undefined,
-    showAllMobs: true,
+    showAllMobs: false,
     useHpRange: false,
   });
 
   const handleApply = () => {
-    if (filters.useHpRange && filters.minHp && filters.maxHp && filters.minHp > filters.maxHp) {
-      alert('Invalid HP Range: Minimum cannot be greater than Maximum');
-      return;
-    }
     onApplyFilters(filters);
   };
 
   const handleReset = () => {
-    const resetFilters = {
+    setFilters({
       mobName: '',
       location: '',
       mobType: '',
       mobDamage: '',
       minHp: undefined,
       maxHp: undefined,
-      showAllMobs: true,
+      showAllMobs: false,
       useHpRange: false,
-    };
-    setFilters(resetFilters);
-    onApplyFilters(resetFilters);
+    });
+    onApplyFilters({
+      mobName: '',
+      location: '',
+      mobType: '',
+      mobDamage: '',
+      minHp: undefined,
+      maxHp: undefined,
+      showAllMobs: false,
+      useHpRange: false,
+    });
   };
 
-  return (
-    <Box p="md">
-      <Stack gap="sm">
-        <TextInput
-          placeholder="Search mob name"
-          value={filters.mobName}
-          onChange={(e) => setFilters({ ...filters, mobName: e.target.value })}
-        />
+  // Define the correct mob type options
+  const mobTypeOptions = [
+    { value: '', label: 'All Mobs' }, // Default option
+    { value: 'Animal', label: 'Animal' },
+    { value: 'Mutant', label: 'Mutant' },
+    { value: 'Robot', label: 'Robot' },
+    { value: 'Mystery', label: 'Mystery' },
+  ];
 
-        <Checkbox
-          label="Show all mobs (override filters)"
-          checked={filters.showAllMobs}
-          onChange={(e) => setFilters({ ...filters, showAllMobs: e.currentTarget.checked })}
-        />
+  return (
+    <Box p="md" style={{ maxWidth: '500px', marginLeft: '20px' }}>
+      <Stack>
+        <Group grow>
+          <TextInput
+            placeholder="Search mob name"
+            value={filters.mobName}
+            onChange={(e) => setFilters({ ...filters, mobName: e.target.value })}
+          />
+          <Checkbox
+            label="Show all mobs"
+            checked={filters.showAllMobs}
+            onChange={(e) => setFilters({ ...filters, showAllMobs: e.currentTarget.checked })}
+          />
+        </Group>
 
         <Group grow>
           {filters.useHpRange ? (
             <>
               <NumberInput
-                label="Min HP"
+                label="HP From"
+                placeholder="Minimum"
                 value={filters.minHp ?? ''}
-                onChange={(v) => setFilters({ ...filters, minHp: Number(v) || undefined })}
+                onChange={(value) => {
+                  const numValue = typeof value === 'string' ? 
+                    (value === '' ? undefined : Number(value)) : 
+                    value;
+                  setFilters({ ...filters, minHp: numValue });
+                }}
                 min={0}
                 disabled={filters.showAllMobs}
               />
               <NumberInput
-                label="Max HP"
+                label="HP To"
+                placeholder="Maximum"
                 value={filters.maxHp ?? ''}
-                onChange={(v) => setFilters({ ...filters, maxHp: Number(v) || undefined })}
+                onChange={(value) => {
+                  const numValue = typeof value === 'string' ? 
+                    (value === '' ? undefined : Number(value)) : 
+                    value;
+                  setFilters({ ...filters, maxHp: numValue });
+                }}
                 min={0}
                 disabled={filters.showAllMobs}
               />
@@ -80,11 +106,19 @@ const MobFilterUI = ({ locations = [], mobTypes = [], damageTypes = [], onApplyF
           ) : (
             <NumberInput
               label="Exact HP"
+              placeholder="Enter HP"
               value={filters.minHp ?? ''}
-              onChange={(v) => {
-                const value = Number(v) || undefined;
-                setFilters({ ...filters, minHp: value, maxHp: value });
+              onChange={(value) => {
+                const numValue = typeof value === 'string' ? 
+                  (value === '' ? undefined : Number(value)) : 
+                  value;
+                setFilters({
+                  ...filters, 
+                  minHp: numValue,
+                  maxHp: numValue,
+                });
               }}
+              min={0}
               disabled={filters.showAllMobs}
             />
           )}
@@ -99,29 +133,29 @@ const MobFilterUI = ({ locations = [], mobTypes = [], damageTypes = [], onApplyF
 
         <Select
           label="Location"
-          data={locations.map(l => ({ value: l, label: l }))}
-          value={filters.location}
-          onChange={(v) => setFilters({ ...filters, location: v || '' })}
-          clearable
           placeholder="Select location"
+          data={locations.map(location => ({ value: location, label: location }))}
+          value={filters.location}
+          onChange={(value) => setFilters({ ...filters, location: value || '' })}
+          clearable
         />
 
         <Select
           label="Mob Type"
-          data={['', ...mobTypes].map(t => ({ value: t, label: t || 'All' }))}
-          value={filters.mobType}
-          onChange={(v) => setFilters({ ...filters, mobType: v || '' })}
-          clearable
           placeholder="Select type"
+          data={mobTypeOptions} // Use the correct mob type options
+          value={filters.mobType}
+          onChange={(value) => setFilters({ ...filters, mobType: value || '' })}
+          clearable
         />
 
         <Select
           label="Damage Type"
-          data={['', ...damageTypes].map(d => ({ value: d, label: d || 'All' }))}
-          value={filters.mobDamage}
-          onChange={(v) => setFilters({ ...filters, mobDamage: v || '' })}
-          clearable
           placeholder="Select damage type"
+          data={damageTypes.map(damage => ({ value: damage, label: damage }))}
+          value={filters.mobDamage}
+          onChange={(value) => setFilters({ ...filters, mobDamage: value || '' })}
+          clearable
         />
 
         <Group grow>

@@ -1,5 +1,6 @@
-import { Box, Container, Grid, Paper } from "@mantine/core";
+import { Box, Container, Flex, Grid, Paper } from "@mantine/core";
 import { useState, useEffect } from "react";
+import Papa from 'papaparse';
 import TitleDescription from "./TitleDescription";
 import MobFilterUI from "./MobFilterUI";
 import OutputDisplay from "./OutputDisplay";
@@ -11,84 +12,74 @@ const Layout = () => {
   const [locations, setLocations] = useState<string[]>([]);
   const [mobTypes, setMobTypes] = useState<string[]>([]);
   const [damageTypes, setDamageTypes] = useState<string[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const loadData = async () => {
       try {
-        const response = await fetch('https://api.entropianexus.com/mobs/');
+        const mobsResponse = await fetch('mobs.csv');
+        const mobsText = await mobsResponse.text();
+        const mobsResult = Papa.parse(mobsText, { header: true });
         
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
+        const levelsResponse = await fetch('levels.csv');
+        const levelsText = await levelsResponse.text();
+        const levelsResult = Papa.parse(levelsText, { header: true });
 
-        const data = await response.json();
-        console.log('Raw API Response:', data);
-
-        if (!Array.isArray(data)) {
-          throw new Error('Invalid API response format - expected array');
-        }
-
+        const combined: CombinedMob[] = [];
+        const damageTypeSet = new Set<string>();
         const locationSet = new Set<string>();
         const typeSet = new Set<string>();
-        const damageTypeSet = new Set<string>();
 
-        const processedData = data.map((mob: any, index: number) => {
-          const safeMob: CombinedMob = {
-            name: mob.name || mob.mob_name || `Mob ${index + 1}`,
-            location: mob.location || mob.spawn_location || 'Unknown',
-            type: mob.type || mob.mob_category || 'Unknown',
-            damageTypes: Array.isArray(mob.damageTypes) ? mob.damageTypes :
-              Array.isArray(mob.damage_types) ? mob.damage_types : [],
-            maturity: mob.maturity || mob.maturity_level || 'Unknown',
-            health: Number(mob.health) || Number(mob.total_health) || 0,
-            dangerLevel: Number(mob.dangerLevel) || Number(mob.threat_level) || 0,
-            hpPerLevel: Number(mob.hpPerLevel) || Number(mob.health_per_level) || 0,
-            attacksPerMin: Number(mob.attacksPerMin) || Number(mob.attacks_per_minute) || undefined,
-            movement: mob.movement || mob.movement_type || 'Unknown',
-            combat: mob.combat || mob.combat_style || 'Unknown',
-            aggression: mob.aggression || mob.aggression_level || 'Unknown',
-            isEvent: Boolean(mob.isEvent || mob.event_mob),
-            isInstance: Boolean(mob.isInstance || mob.instance_mob),
-          };
+        mobsResult.data.forEach((mob: any) => {
+          const levels = levelsResult.data.filter(
+            (level: any) => level.Creature === mob.Name
+          );
+          
+          levels.forEach((level: any) => {
+            const damageEntries = [
+              { type: 'STB', value: mob.Stb },
+              { type: 'CUT', value: mob.Cut },
+              { type: 'IMP', value: mob.Imp },
+              { type: 'PEN', value: mob.Pen },
+              { type: 'SHR', value: mob.Shr },
+              { type: 'BRN', value: mob.Brn },
+              { type: 'CLD', value: mob.Cld },
+              { type: 'ACD', value: mob.Acd },
+              { type: 'ELC', value: mob.Elc },
+            ];
 
-          // Add validated data to sets
-          if (safeMob.location) locationSet.add(safeMob.location);
-          if (safeMob.type) typeSet.add(safeMob.type);
-          safeMob.damageTypes.forEach((dt: string) => {
-            if (dt && typeof dt === 'string') {
-              damageTypeSet.add(dt);
-            }
+            const damageTypes = damageEntries
+              .filter(entry => entry.value && entry.value !== '0')
+              .map(entry => `${entry.type} ${entry.value}%`);
+
+            damageTypes.forEach(dt => damageTypeSet.add(dt.split(' ')[0]));
+            locationSet.add(mob['Found on']);
+            typeSet.add(mob.Type); // Using 'Type' column from CSV
+
+            combined.push({
+              name: mob.Name,
+              location: mob['Found on'],
+              type: mob.Type, // Correctly mapped to mob type
+              damageTypes,
+              maturity: level.Maturity,
+              health: Number(level.Health) || 0,
+              dangerLevel: Number(level['Danger Level']) || 0,
+              hpPerLevel: Number(level['HP/Lvl']) || 0,
+              attacksPerMin: Number(level['Attacks/min']) || undefined,
+              movement: mob.Movement,
+              combat: mob.Combat,
+              aggression: mob.Aggression,
+              isEvent: mob['Is Event'] === 'true',
+              isInstance: mob['Is Instance'] === 'true'
+            });
           });
-
-          return safeMob;
         });
 
-        console.log('Processed Mob Data:', processedData);
-        
-        setMobData(processedData);
+        setMobData(combined);
         setLocations(Array.from(locationSet).filter(Boolean));
         setMobTypes(Array.from(typeSet).filter(Boolean));
         setDamageTypes(Array.from(damageTypeSet).filter(Boolean));
-        setLoading(false);
-
-        // Initial filter to show all mobs
-        handleFilter({
-          mobName: '',
-          location: '',
-          mobType: '',
-          mobDamage: '',
-          minHp: undefined,
-          maxHp: undefined,
-          showAllMobs: true,
-          useHpRange: false,
-        });
-
-      } catch (err) {
-        console.error('Data loading failed:', err);
-        setError(err instanceof Error ? err.message : 'Failed to load data');
-        setLoading(false);
+      } catch (error) {
+        console.error('Error loading data:', error);
       }
     };
 
@@ -96,36 +87,56 @@ const Layout = () => {
   }, []);
 
   const handleFilter = (filters: FilterValues) => {
-    const filtered = mobData.filter(mob => {
-      const matchesName = mob.name.toLowerCase().includes(filters.mobName.toLowerCase());
-      const matchesLocation = !filters.location || mob.location === filters.location;
-      const matchesType = !filters.mobType || mob.type === filters.mobType;
-      const matchesDamage = !filters.mobDamage || mob.damageTypes.includes(filters.mobDamage);
-      const matchesHP = mob.health >= (filters.minHp || 0) && 
-                       mob.health <= (filters.maxHp || Infinity);
+    let filtered = [...mobData];
 
-      return filters.showAllMobs 
-        ? matchesName
-        : matchesName && matchesLocation && matchesType && matchesDamage && matchesHP;
+    if (filters.mobName) {
+      filtered = filtered.filter(mob => 
+        mob.name.toLowerCase().includes(filters.mobName.toLowerCase())
+      );
+    }
+
+    if (!filters.showAllMobs) {
+      if (filters.location) {
+        filtered = filtered.filter(mob => mob.location === filters.location);
+      }
+
+      if (filters.mobType) {
+        filtered = filtered.filter(mob => mob.type === filters.mobType);
+      }
+
+      if (filters.minHp !== undefined || filters.maxHp !== undefined) {
+        filtered = filtered.filter(mob => {
+          const hp = mob.health;
+          const min = filters.minHp ?? 0;
+          const max = filters.maxHp ?? Infinity;
+          return hp >= min && hp <= max;
+        });
+      }
+    }
+
+    const sorted = filtered.sort((a, b) => {
+      if (a.hpPerLevel === 0 && b.hpPerLevel === 0) return 0;
+      if (a.hpPerLevel === 0) return 1;
+      if (b.hpPerLevel === 0) return -1;
+      return a.hpPerLevel - b.hpPerLevel;
     });
 
-    setFilteredResults(filtered.sort((a, b) => a.dangerLevel - b.dangerLevel));
+    setFilteredResults(sorted);
   };
 
-  if (loading) return <Box p="xl" ta="center">Loading mob data...</Box>;
-  if (error) return <Box p="xl" ta="center" c="red">Error: {error}</Box>;
-
   return (
-    <Container fluid p="xl">
-      <TitleDescription
-        title="Mob Database"
-        description="Browse and filter through creature information"
-      />
+    <Container fluid p="xl" style={{ minHeight: '100vh' }}>
+      <Box mb="xl" style={{ textAlign: 'center' }}>
+        <TitleDescription
+          title='Mob Filter UI'
+          description='Use this interface to filter mobs by name, HP, location, type, and damage type.'
+        />
+      </Box>
       
-      <Paper withBorder p="xl" mt="md">
+      <Paper withBorder p="xl" style={{ width: '100%' }}>
         <Grid gutter="xl">
           <Grid.Col span={{ base: 12, md: 4 }}>
-            <MobFilterUI
+            <MobFilterUI 
               locations={locations}
               mobTypes={mobTypes}
               damageTypes={damageTypes}
