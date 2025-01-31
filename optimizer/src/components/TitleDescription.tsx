@@ -7,9 +7,9 @@ interface TitleDescriptionProps {
 
 const TitleDescription = ({ title, description }: TitleDescriptionProps) => {
   return (
-    <Stack gap="sm" align="center" style={{ textAlign: 'center' }}>
+    <Stack gap="xs" align="center">
       <Title order={1} style={{ fontSize: '2.5rem' }}>{title}</Title>
-      <Text color="dimmed">{description}</Text>
+      <Text size="xl" color="dimmed" style={{ textAlign: 'center' }}>{description}</Text>
     </Stack>
   );
 };

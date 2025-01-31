@@ -1,111 +1,134 @@
 import { useState } from 'react';
 import { Select, Checkbox, TextInput, Button, Group, Box, NumberInput, Stack } from '@mantine/core';
-import { LocationsData } from './LocationsData'; // Import the data
-import { DamageTypeData } from './DamageTypeData'; // Corrected import
-import TitleDescription from './TitleDescription'; // Import the new component
+import { FilterValues } from './types';
 
-const MobFilterUI = () => {
-  const [mobName, setMobName] = useState('');
-  const [showAllMobs, setShowAllMobs] = useState(false);
-  const [hp, setHp] = useState('');
-  const [minHp, setMinHp] = useState<number | undefined>(undefined); // Initialize as undefined
-  const [maxHp, setMaxHp] = useState<number | undefined>(undefined); // Initialize as undefined
-  const [location, setLocation] = useState('');
-  const [mobType, setMobType] = useState('');
-  const [mobDamage, setMobDamage] = useState('');
+interface MobFilterUIProps {
+  locations: string[];
+  mobTypes: string[];
+  damageTypes: string[];
+  onApplyFilters: (filters: FilterValues) => void;
+}
 
-  const handleApplyFilters = () => {
-    // Here you can handle the filter logic
-    console.log({
-      mobName,
-      showAllMobs,
-      hp,
-      minHp,
-      maxHp,
-      location,
-      mobType,
-      mobDamage,
-    });
+const MobFilterUI = ({ locations = [], mobTypes = [], damageTypes = [], onApplyFilters }: MobFilterUIProps) => {
+  const [filters, setFilters] = useState<FilterValues>({
+    mobName: '',
+    location: '',
+    mobType: '',
+    mobDamage: '',
+    minHp: undefined,
+    maxHp: undefined,
+    showAllMobs: true,
+    useHpRange: false,
+  });
+
+  const handleApply = () => {
+    if (filters.useHpRange && filters.minHp && filters.maxHp && filters.minHp > filters.maxHp) {
+      alert('Invalid HP Range: Minimum cannot be greater than Maximum');
+      return;
+    }
+    onApplyFilters(filters);
+  };
+
+  const handleReset = () => {
+    const resetFilters = {
+      mobName: '',
+      location: '',
+      mobType: '',
+      mobDamage: '',
+      minHp: undefined,
+      maxHp: undefined,
+      showAllMobs: true,
+      useHpRange: false,
+    };
+    setFilters(resetFilters);
+    onApplyFilters(resetFilters);
   };
 
   return (
-    <Box p="md" style={{ maxWidth: '500px', marginLeft: '20px' }}>
-      {/* Search Bar with Checkbox */}
-      <Group mb="md" align="flex-end">
+    <Box p="md">
+      <Stack gap="sm">
         <TextInput
-          placeholder="Enter Mob Name Here"
-          value={mobName}
-          onChange={(event) => setMobName(event.currentTarget.value)}
-          style={{ flex: 1 }}
+          placeholder="Search mob name"
+          value={filters.mobName}
+          onChange={(e) => setFilters({ ...filters, mobName: e.target.value })}
         />
+
         <Checkbox
-          label="Show All Mobs"
-          checked={showAllMobs}
-          onChange={(event) => setShowAllMobs(event.currentTarget.checked)}
+          label="Show all mobs (override filters)"
+          checked={filters.showAllMobs}
+          onChange={(e) => setFilters({ ...filters, showAllMobs: e.currentTarget.checked })}
         />
-      </Group>
 
-      {/* HP Search */}
-      <TextInput
-        label="HP"
-        placeholder="Enter HP"
-        value={hp}
-        onChange={(event) => setHp(event.currentTarget.value)}
-        mb="md"
-      />
+        <Group grow>
+          {filters.useHpRange ? (
+            <>
+              <NumberInput
+                label="Min HP"
+                value={filters.minHp ?? ''}
+                onChange={(v) => setFilters({ ...filters, minHp: Number(v) || undefined })}
+                min={0}
+                disabled={filters.showAllMobs}
+              />
+              <NumberInput
+                label="Max HP"
+                value={filters.maxHp ?? ''}
+                onChange={(v) => setFilters({ ...filters, maxHp: Number(v) || undefined })}
+                min={0}
+                disabled={filters.showAllMobs}
+              />
+            </>
+          ) : (
+            <NumberInput
+              label="Exact HP"
+              value={filters.minHp ?? ''}
+              onChange={(v) => {
+                const value = Number(v) || undefined;
+                setFilters({ ...filters, minHp: value, maxHp: value });
+              }}
+              disabled={filters.showAllMobs}
+            />
+          )}
+        </Group>
 
-      {/* HP Range (2 Inputs) */}
-      <Group mb="md" grow>
-        <NumberInput
-          label="Min HP"
-          placeholder="Enter Minimum HP"
-          value={minHp}
-          onChange={(value) => setMinHp(value === '' ? undefined : Number(value))} // Handle empty input
-          min={0}
+        <Checkbox
+          label="Use HP Range"
+          checked={filters.useHpRange}
+          onChange={(e) => setFilters({ ...filters, useHpRange: e.currentTarget.checked })}
+          disabled={filters.showAllMobs}
         />
-        <NumberInput
-          label="Max HP"
-          placeholder="Enter Maximum HP"
-          value={maxHp}
-          onChange={(value) => setMaxHp(value === '' ? undefined : Number(value))} // Handle empty input
-          min={0}
+
+        <Select
+          label="Location"
+          data={locations.map(l => ({ value: l, label: l }))}
+          value={filters.location}
+          onChange={(v) => setFilters({ ...filters, location: v || '' })}
+          clearable
+          placeholder="Select location"
         />
-      </Group>
 
-      {/* Location Dropdown */}
-      <Select
-        label="Location"
-        placeholder="Select Location"
-        value={location}
-        onChange={(value) => setLocation(value ?? '')} // Handle null or undefined
-        data={LocationsData} // Use the imported data
-        mb="md"
-      />
+        <Select
+          label="Mob Type"
+          data={['', ...mobTypes].map(t => ({ value: t, label: t || 'All' }))}
+          value={filters.mobType}
+          onChange={(v) => setFilters({ ...filters, mobType: v || '' })}
+          clearable
+          placeholder="Select type"
+        />
 
-      {/* Mob Type Dropdown */}
-      <Select
-        label="Mob Type"
-        placeholder="Select Mob Type"
-        value={mobType}
-        onChange={(value) => setMobType(value ?? '')} // Handle null or undefined
-        data={['Animal', 'Mutant', 'Robot']}
-        mb="md"
-      />
+        <Select
+          label="Damage Type"
+          data={['', ...damageTypes].map(d => ({ value: d, label: d || 'All' }))}
+          value={filters.mobDamage}
+          onChange={(v) => setFilters({ ...filters, mobDamage: v || '' })}
+          clearable
+          placeholder="Select damage type"
+        />
 
-      {/* Mob Damage Dropdown */}
-      <Select
-        label="Mob Damage"
-        placeholder="Select Mob Damage"
-        value={mobDamage}
-        onChange={(value) => setMobDamage(value ?? '')} // Handle null or undefined
-        data={DamageTypeData} // Use the imported data
-        mb="md"
-      />
-
-      {/* Apply Filters Button */}
-      <Button fullWidth onClick={handleApplyFilters}>
-        Apply Filters
-      </Button>
+        <Group grow>
+          <Button onClick={handleApply}>Apply Filters</Button>
+          <Button variant="outline" onClick={handleReset}>Reset</Button>
+        </Group>
+      </Stack>
     </Box>
   );
 };
