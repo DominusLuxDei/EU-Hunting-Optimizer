@@ -19,7 +19,7 @@ const Layout = () => {
         const mobsResponse = await fetch('mobs.csv');
         const mobsText = await mobsResponse.text();
         const mobsResult = Papa.parse(mobsText, { header: true });
-        
+
         const levelsResponse = await fetch('levels.csv');
         const levelsText = await levelsResponse.text();
         const levelsResult = Papa.parse(levelsText, { header: true });
@@ -33,7 +33,7 @@ const Layout = () => {
           const levels = levelsResult.data.filter(
             (level: any) => level.Creature === mob.Name
           );
-          
+
           levels.forEach((level: any) => {
             const damageEntries = [
               { type: 'STB', value: mob.Stb },
@@ -53,12 +53,12 @@ const Layout = () => {
 
             damageTypes.forEach(dt => damageTypeSet.add(dt.split(' ')[0]));
             locationSet.add(mob['Found on']);
-            typeSet.add(mob.Type); // Using 'Type' column from CSV
+            typeSet.add(mob['Mob Type']);
 
             combined.push({
               name: mob.Name,
               location: mob['Found on'],
-              type: mob.Type, // Correctly mapped to mob type
+              type: mob['Mob Type'],
               damageTypes,
               maturity: level.Maturity,
               health: Number(level.Health) || 0,
@@ -89,31 +89,49 @@ const Layout = () => {
   const handleFilter = (filters: FilterValues) => {
     let filtered = [...mobData];
 
+    // Apply filters cumulatively
     if (filters.mobName) {
       filtered = filtered.filter(mob => 
         mob.name.toLowerCase().includes(filters.mobName.toLowerCase())
       );
     }
 
-    if (!filters.showAllMobs) {
-      if (filters.location) {
-        filtered = filtered.filter(mob => mob.location === filters.location);
-      }
-
-      if (filters.mobType) {
-        filtered = filtered.filter(mob => mob.type === filters.mobType);
-      }
-
-      if (filters.minHp !== undefined || filters.maxHp !== undefined) {
-        filtered = filtered.filter(mob => {
-          const hp = mob.health;
-          const min = filters.minHp ?? 0;
-          const max = filters.maxHp ?? Infinity;
-          return hp >= min && hp <= max;
-        });
-      }
+    if (filters.location) {
+      filtered = filtered.filter(mob => mob.location === filters.location);
     }
 
+    if (filters.mobType) {
+      filtered = filtered.filter(mob => {
+        // Extract the first word from the mob's type
+        const firstWord = mob.type.split(' ')[0];
+        return firstWord === filters.mobType;
+      });
+    }
+
+    if (filters.mobDamage) {
+      filtered = filtered.filter(mob => {
+        // Check if the mob's damageTypes array includes the selected damage type
+        return mob.damageTypes.some(dt => dt.startsWith(filters.mobDamage));
+      });
+    }
+
+    if (filters.minHp !== undefined || filters.maxHp !== undefined) {
+      filtered = filtered.filter(mob => {
+        const hp = mob.health;
+        const min = filters.minHp ?? 0;
+        const max = filters.maxHp ?? Infinity;
+        return hp >= min && hp <= max;
+      });
+    }
+
+    // If "Show All Mobs" is checked, skip all filters except the name filter
+    if (filters.showAllMobs) {
+      filtered = mobData.filter(mob => 
+        filters.mobName ? mob.name.toLowerCase().includes(filters.mobName.toLowerCase()) : true
+      );
+    }
+
+    // Sort the filtered results by HP per level
     const sorted = filtered.sort((a, b) => {
       if (a.hpPerLevel === 0 && b.hpPerLevel === 0) return 0;
       if (a.hpPerLevel === 0) return 1;

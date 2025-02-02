@@ -48,6 +48,9 @@ const MobFilterUI = ({ locations, mobTypes, damageTypes, onApplyFilters }: MobFi
     });
   };
 
+  // Sort locations alphabetically
+  const sortedLocations = [...locations].sort((a, b) => a.localeCompare(b));
+
   // Define the correct mob type options
   const mobTypeOptions = [
     { value: '', label: 'All Mobs' }, // Default option
@@ -134,7 +137,7 @@ const MobFilterUI = ({ locations, mobTypes, damageTypes, onApplyFilters }: MobFi
         <Select
           label="Location"
           placeholder="Select location"
-          data={locations.map(location => ({ value: location, label: location }))}
+          data={sortedLocations.map(location => ({ value: location, label: location }))}
           value={filters.location}
           onChange={(value) => setFilters({ ...filters, location: value || '' })}
           clearable
@@ -143,7 +146,7 @@ const MobFilterUI = ({ locations, mobTypes, damageTypes, onApplyFilters }: MobFi
         <Select
           label="Mob Type"
           placeholder="Select type"
-          data={mobTypeOptions} // Use the correct mob type options
+          data={mobTypeOptions}
           value={filters.mobType}
           onChange={(value) => setFilters({ ...filters, mobType: value || '' })}
           clearable

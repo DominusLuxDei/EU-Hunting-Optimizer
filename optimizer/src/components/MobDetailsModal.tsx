@@ -7,6 +7,12 @@ interface MobDetailsModalProps {
 }
 
 const MobDetailsModal = ({ mob, onClose }: MobDetailsModalProps) => {
+  // Function to clean up the type by removing "Investigator"
+  const cleanType = (type: string | undefined) => {
+    if (!type) return 'N/A';
+    return type.replace(/Investigator/g, '').trim();
+  };
+
   return (
     <Modal 
       opened={!!mob} 
@@ -18,7 +24,7 @@ const MobDetailsModal = ({ mob, onClose }: MobDetailsModalProps) => {
       {mob && (
         <Stack gap="sm">
           <Text><strong>Name:</strong> {mob.name}</Text>
-          <Text><strong>Type:</strong> {mob.type}</Text>
+          <Text><strong>Type:</strong> {cleanType(mob.type)}</Text> {/* Use cleanType here */}
           <Text><strong>Location:</strong> {mob.location}</Text>
           <Text><strong>Maturity:</strong> {mob.maturity}</Text>
           <Text><strong>Health:</strong> {mob.health.toLocaleString()}</Text>
