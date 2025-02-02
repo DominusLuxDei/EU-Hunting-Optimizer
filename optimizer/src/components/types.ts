@@ -3,6 +3,7 @@ export interface FilterValues {
   location: string;
   mobType: string;
   mobDamage: string;
+  mobCombat: string; // New property for combat type
   minHp: number | undefined;
   maxHp: number | undefined;
   showAllMobs: boolean;
@@ -20,7 +21,7 @@ export interface CombinedMob {
   hpPerLevel: number;
   attacksPerMin?: number;
   movement?: string;
-  combat?: string;
+  combat?: string; // Used for the new combat type filter
   aggression?: string;
   isEvent?: boolean;
   isInstance?: boolean;

@@ -1,4 +1,4 @@
-// DamageTypeData.js
+// DamageTypeData.tsx
 export const DamageTypeData = [
     'Acid', 
     'Burn', 

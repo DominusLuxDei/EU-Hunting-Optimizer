@@ -74,10 +74,14 @@ const Layout = () => {
           });
         });
 
+        // Add "ALL" to the damage types
+        const allDamageTypes = Array.from(damageTypeSet).filter(Boolean);
+        allDamageTypes.unshift('ALL'); // Add "ALL" as the first option
+
         setMobData(combined);
         setLocations(Array.from(locationSet).filter(Boolean));
         setMobTypes(Array.from(typeSet).filter(Boolean));
-        setDamageTypes(Array.from(damageTypeSet).filter(Boolean));
+        setDamageTypes(allDamageTypes); // Use the updated damage types array
       } catch (error) {
         console.error('Error loading data:', error);
       }
@@ -88,33 +92,38 @@ const Layout = () => {
 
   const handleFilter = (filters: FilterValues) => {
     let filtered = [...mobData];
-
+  
     // Apply filters cumulatively
     if (filters.mobName) {
       filtered = filtered.filter(mob => 
         mob.name.toLowerCase().includes(filters.mobName.toLowerCase())
       );
     }
-
+  
     if (filters.location) {
       filtered = filtered.filter(mob => mob.location === filters.location);
     }
-
+  
     if (filters.mobType) {
       filtered = filtered.filter(mob => {
-        // Extract the first word from the mob's type
         const firstWord = mob.type.split(' ')[0];
         return firstWord === filters.mobType;
       });
     }
-
-    if (filters.mobDamage) {
+  
+    if (filters.mobDamage && filters.mobDamage !== 'ALL') {
       filtered = filtered.filter(mob => {
-        // Check if the mob's damageTypes array includes the selected damage type
         return mob.damageTypes.some(dt => dt.startsWith(filters.mobDamage));
       });
     }
-
+  
+    // New combat type filter
+    if (filters.mobCombat && filters.mobCombat !== 'All') {
+      filtered = filtered.filter(mob => {
+        return mob.combat === filters.mobCombat;
+      });
+    }
+  
     if (filters.minHp !== undefined || filters.maxHp !== undefined) {
       filtered = filtered.filter(mob => {
         const hp = mob.health;
@@ -123,14 +132,14 @@ const Layout = () => {
         return hp >= min && hp <= max;
       });
     }
-
+  
     // If "Show All Mobs" is checked, skip all filters except the name filter
     if (filters.showAllMobs) {
       filtered = mobData.filter(mob => 
         filters.mobName ? mob.name.toLowerCase().includes(filters.mobName.toLowerCase()) : true
       );
     }
-
+  
     // Sort the filtered results by HP per level
     const sorted = filtered.sort((a, b) => {
       if (a.hpPerLevel === 0 && b.hpPerLevel === 0) return 0;
@@ -138,7 +147,7 @@ const Layout = () => {
       if (b.hpPerLevel === 0) return -1;
       return a.hpPerLevel - b.hpPerLevel;
     });
-
+  
     setFilteredResults(sorted);
   };
 

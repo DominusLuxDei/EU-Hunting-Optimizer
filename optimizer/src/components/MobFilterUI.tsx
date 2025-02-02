@@ -14,7 +14,8 @@ const MobFilterUI = ({ locations, mobTypes, damageTypes, onApplyFilters }: MobFi
     mobName: '',
     location: '',
     mobType: '',
-    mobDamage: '',
+    mobDamage: 'ALL',
+    mobCombat: 'All', // Default to "All"
     minHp: undefined,
     maxHp: undefined,
     showAllMobs: false,
@@ -30,7 +31,8 @@ const MobFilterUI = ({ locations, mobTypes, damageTypes, onApplyFilters }: MobFi
       mobName: '',
       location: '',
       mobType: '',
-      mobDamage: '',
+      mobDamage: 'ALL',
+      mobCombat: 'All', // Reset to "All"
       minHp: undefined,
       maxHp: undefined,
       showAllMobs: false,
@@ -40,7 +42,8 @@ const MobFilterUI = ({ locations, mobTypes, damageTypes, onApplyFilters }: MobFi
       mobName: '',
       location: '',
       mobType: '',
-      mobDamage: '',
+      mobDamage: 'ALL',
+      mobCombat: 'All', // Reset to "All"
       minHp: undefined,
       maxHp: undefined,
       showAllMobs: false,
@@ -53,11 +56,17 @@ const MobFilterUI = ({ locations, mobTypes, damageTypes, onApplyFilters }: MobFi
 
   // Define the correct mob type options
   const mobTypeOptions = [
-    { value: '', label: 'All Mobs' }, // Default option
+    { value: '', label: 'All Mobs' },
     { value: 'Animal', label: 'Animal' },
     { value: 'Mutant', label: 'Mutant' },
     { value: 'Robot', label: 'Robot' },
-    { value: 'Mystery', label: 'Mystery' },
+  ];
+
+  // Define the combat type options
+  const combatTypeOptions = [
+    { value: 'All', label: 'All' },
+    { value: 'Close', label: 'Close' },
+    { value: 'Ranged', label: 'Ranged' },
   ];
 
   return (
@@ -118,7 +127,7 @@ const MobFilterUI = ({ locations, mobTypes, damageTypes, onApplyFilters }: MobFi
                 setFilters({
                   ...filters, 
                   minHp: numValue,
-                  maxHp: numValue,
+                  maxHp: filters.useHpRange ? filters.maxHp : undefined,
                 });
               }}
               min={0}
@@ -157,7 +166,17 @@ const MobFilterUI = ({ locations, mobTypes, damageTypes, onApplyFilters }: MobFi
           placeholder="Select damage type"
           data={damageTypes.map(damage => ({ value: damage, label: damage }))}
           value={filters.mobDamage}
-          onChange={(value) => setFilters({ ...filters, mobDamage: value || '' })}
+          onChange={(value) => setFilters({ ...filters, mobDamage: value || 'ALL' })}
+          clearable
+        />
+
+        {/* New Combat Type Select */}
+        <Select
+          label="Mob Combat Type"
+          placeholder="Select combat type"
+          data={combatTypeOptions}
+          value={filters.mobCombat}
+          onChange={(value) => setFilters({ ...filters, mobCombat: value || 'All' })}
           clearable
         />
 
