@@ -9,7 +9,7 @@ interface MobFilterUIProps {
   onApplyFilters: (filters: FilterValues) => void;
 }
 
-const MobFilterUI = ({ locations, mobTypes, damageTypes, onApplyFilters }: MobFilterUIProps) => {
+const MobFilterUI = ({ locations, damageTypes, onApplyFilters }: MobFilterUIProps) => {
   const [filters, setFilters] = useState<FilterValues>({
     mobName: '',
     location: '',
