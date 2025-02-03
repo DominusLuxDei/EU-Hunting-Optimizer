@@ -83,13 +83,21 @@ const Layout = () => {
           });
         });
 
-        const allDamageTypes = Array.from(damageTypeSet).filter(Boolean);
-        allDamageTypes.unshift('ALL'); // Add "ALL" as the first option
+        // Normalize damage types: Convert "ALL" to "All" and remove duplicates
+        const normalizedDamageTypes = Array.from(damageTypeSet)
+          .map(type => type === 'ALL' ? 'All' : type) // Convert "ALL" to "All"
+          .filter(Boolean); // Remove falsy values
+
+        // Sort damage types alphabetically and prepend "All"
+        const sortedDamageTypes = normalizedDamageTypes
+          .filter(damage => damage !== 'All') // Remove "All"
+          .sort((a, b) => a.localeCompare(b)); // Sort alphabetically
+        sortedDamageTypes.unshift('All'); // Add "All" back at the beginning
 
         setMobData(combined);
         setLocations(Array.from(locationSet).filter(Boolean));
         setMobTypes(Array.from(typeSet).filter(Boolean));
-        setDamageTypes(allDamageTypes); // Use the updated damage types array
+        setDamageTypes(sortedDamageTypes); // Use the updated damage types array
       } catch (error) {
         console.error('Error loading data:', error);
       }
@@ -101,12 +109,18 @@ const Layout = () => {
   const handleFilter = (filters: FilterValues) => {
     let filtered = [...mobData];
 
+    // Apply mobName filter first (ignores all other filters)
     if (filters.mobName) {
       filtered = filtered.filter(mob =>
         mob.name.toLowerCase().includes(filters.mobName.toLowerCase())
       );
+
+      // Return early if mobName filter is active (ignore other filters)
+      setFilteredResults(filtered);
+      return;
     }
 
+    // Apply other filters only if mobName is not active
     if (filters.location) {
       filtered = filtered.filter(mob => mob.location === filters.location);
     }
@@ -118,7 +132,7 @@ const Layout = () => {
       });
     }
 
-    if (filters.mobDamage && filters.mobDamage !== 'ALL') {
+    if (filters.mobDamage && filters.mobDamage !== 'All') {
       const selectedDamageType = filters.mobDamage.toLowerCase();
       const damageColumns = ['stb', 'cut', 'imp', 'pen', 'shr', 'brn', 'cld', 'acd', 'elc'] as const;
 
@@ -173,6 +187,7 @@ const Layout = () => {
       );
     }
 
+    // Sort the filtered results by HP per level
     const sorted = filtered.sort((a, b) => {
       if (a.hpPerLevel === 0 && b.hpPerLevel === 0) return 0;
       if (a.hpPerLevel === 0) return 1;
