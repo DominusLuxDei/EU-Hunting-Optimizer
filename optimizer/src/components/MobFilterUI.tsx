@@ -1,3 +1,5 @@
+// MobFilterUI.tsx
+
 import { useState } from 'react';
 import { Select, Checkbox, TextInput, Button, Group, Box, NumberInput, Stack } from '@mantine/core';
 import { FilterValues } from './types';
@@ -15,11 +17,12 @@ const MobFilterUI = ({ locations, mobTypes, damageTypes, onApplyFilters }: MobFi
     location: '',
     mobType: '',
     mobDamage: 'ALL',
-    mobCombat: 'All', // Default to "All"
+    mobCombat: 'All',
     minHp: undefined,
     maxHp: undefined,
     showAllMobs: false,
     useHpRange: false,
+    exclusiveDamageType: false,
   });
 
   const handleApply = () => {
@@ -32,22 +35,24 @@ const MobFilterUI = ({ locations, mobTypes, damageTypes, onApplyFilters }: MobFi
       location: '',
       mobType: '',
       mobDamage: 'ALL',
-      mobCombat: 'All', // Reset to "All"
+      mobCombat: 'All',
       minHp: undefined,
       maxHp: undefined,
       showAllMobs: false,
       useHpRange: false,
+      exclusiveDamageType: false,
     });
     onApplyFilters({
       mobName: '',
       location: '',
       mobType: '',
       mobDamage: 'ALL',
-      mobCombat: 'All', // Reset to "All"
+      mobCombat: 'All',
       minHp: undefined,
       maxHp: undefined,
       showAllMobs: false,
       useHpRange: false,
+      exclusiveDamageType: false,
     });
   };
 
@@ -72,6 +77,7 @@ const MobFilterUI = ({ locations, mobTypes, damageTypes, onApplyFilters }: MobFi
   return (
     <Box p="md" style={{ maxWidth: '500px', marginLeft: '20px' }}>
       <Stack>
+        {/* Mob Name Search */}
         <Group grow>
           <TextInput
             placeholder="Search mob name"
@@ -85,6 +91,7 @@ const MobFilterUI = ({ locations, mobTypes, damageTypes, onApplyFilters }: MobFi
           />
         </Group>
 
+        {/* HP Filtering */}
         <Group grow>
           {filters.useHpRange ? (
             <>
@@ -135,7 +142,6 @@ const MobFilterUI = ({ locations, mobTypes, damageTypes, onApplyFilters }: MobFi
             />
           )}
         </Group>
-
         <Checkbox
           label="Use HP Range"
           checked={filters.useHpRange}
@@ -143,6 +149,7 @@ const MobFilterUI = ({ locations, mobTypes, damageTypes, onApplyFilters }: MobFi
           disabled={filters.showAllMobs}
         />
 
+        {/* Location Filter */}
         <Select
           label="Location"
           placeholder="Select location"
@@ -152,6 +159,7 @@ const MobFilterUI = ({ locations, mobTypes, damageTypes, onApplyFilters }: MobFi
           clearable
         />
 
+        {/* Mob Type Filter */}
         <Select
           label="Mob Type"
           placeholder="Select type"
@@ -161,6 +169,7 @@ const MobFilterUI = ({ locations, mobTypes, damageTypes, onApplyFilters }: MobFi
           clearable
         />
 
+        {/* Damage Type Filter */}
         <Select
           label="Damage Type"
           placeholder="Select damage type"
@@ -169,8 +178,13 @@ const MobFilterUI = ({ locations, mobTypes, damageTypes, onApplyFilters }: MobFi
           onChange={(value) => setFilters({ ...filters, mobDamage: value || 'ALL' })}
           clearable
         />
+        <Checkbox
+          label="Exclusive Damage Type"
+          checked={filters.exclusiveDamageType}
+          onChange={(e) => setFilters({ ...filters, exclusiveDamageType: e.currentTarget.checked })}
+        />
 
-        {/* New Combat Type Select */}
+        {/* Combat Type Filter */}
         <Select
           label="Mob Combat Type"
           placeholder="Select combat type"
@@ -180,6 +194,7 @@ const MobFilterUI = ({ locations, mobTypes, damageTypes, onApplyFilters }: MobFi
           clearable
         />
 
+        {/* Apply and Reset Buttons */}
         <Group grow>
           <Button onClick={handleApply}>Apply Filters</Button>
           <Button variant="outline" onClick={handleReset}>Reset</Button>

@@ -1,4 +1,4 @@
-import { Box, Container, Flex, Grid, Paper } from "@mantine/core";
+import { Box, Container, Grid, Paper } from "@mantine/core";
 import { useState, useEffect } from "react";
 import Papa from 'papaparse';
 import TitleDescription from "./TitleDescription";
@@ -69,12 +69,20 @@ const Layout = () => {
               combat: mob.Combat,
               aggression: mob.Aggression,
               isEvent: mob['Is Event'] === 'true',
-              isInstance: mob['Is Instance'] === 'true'
+              isInstance: mob['Is Instance'] === 'true',
+              stb: Number(mob.Stb) || 0,
+              cut: Number(mob.Cut) || 0,
+              imp: Number(mob.Imp) || 0,
+              pen: Number(mob.Pen) || 0,
+              shr: Number(mob.Shr) || 0,
+              brn: Number(mob.Brn) || 0,
+              cld: Number(mob.Cld) || 0,
+              acd: Number(mob.Acd) || 0,
+              elc: Number(mob.Elc) || 0,
             });
           });
         });
 
-        // Add "ALL" to the damage types
         const allDamageTypes = Array.from(damageTypeSet).filter(Boolean);
         allDamageTypes.unshift('ALL'); // Add "ALL" as the first option
 
@@ -92,38 +100,59 @@ const Layout = () => {
 
   const handleFilter = (filters: FilterValues) => {
     let filtered = [...mobData];
-  
+
     // Apply filters cumulatively
     if (filters.mobName) {
-      filtered = filtered.filter(mob => 
+      filtered = filtered.filter(mob =>
         mob.name.toLowerCase().includes(filters.mobName.toLowerCase())
       );
     }
-  
+
     if (filters.location) {
       filtered = filtered.filter(mob => mob.location === filters.location);
     }
-  
+
     if (filters.mobType) {
       filtered = filtered.filter(mob => {
         const firstWord = mob.type.split(' ')[0];
         return firstWord === filters.mobType;
       });
     }
-  
+
     if (filters.mobDamage && filters.mobDamage !== 'ALL') {
-      filtered = filtered.filter(mob => {
-        return mob.damageTypes.some(dt => dt.startsWith(filters.mobDamage));
-      });
+      const selectedDamageType = filters.mobDamage.toLowerCase(); // e.g., "stb", "acd"
+      const damageColumns = ['stb', 'cut', 'imp', 'pen', 'shr', 'brn', 'cld', 'acd', 'elc'] as const;
+
+      if (!damageColumns.includes(selectedDamageType as typeof damageColumns[number])) {
+        throw new Error(`Invalid damage type: ${selectedDamageType}`);
+      }
+
+      if (filters.exclusiveDamageType) {
+        // Exclusive damage type filter: mob must ONLY have the selected damage type
+        filtered = filtered.filter(mob => {
+          const selectedColumn = selectedDamageType as keyof CombinedMob; // e.g., "stb"
+          const otherColumns = damageColumns.filter(col => col !== selectedDamageType);
+
+          // Ensure the selected column has a value > 0 and all other columns have 0
+          return (
+            (Number(mob[selectedColumn]) || 0) > 0 && // Cast to number
+            otherColumns.every(col => (Number(mob[col as keyof CombinedMob]) || 0) === 0) // Cast to number
+          );
+        });
+      } else {
+        // Non-exclusive damage type filter: mob can have the selected damage type along with others
+        filtered = filtered.filter(mob => {
+          return (Number(mob[selectedDamageType as keyof CombinedMob]) || 0) > 0; // Cast to number
+        });
+      }
     }
-  
-    // New combat type filter
+
     if (filters.mobCombat && filters.mobCombat !== 'All') {
       filtered = filtered.filter(mob => {
         return mob.combat === filters.mobCombat;
       });
     }
-  
+
     if (filters.minHp !== undefined || filters.maxHp !== undefined) {
       filtered = filtered.filter(mob => {
         const hp = mob.health;
@@ -132,14 +161,14 @@ const Layout = () => {
         return hp >= min && hp <= max;
       });
     }
-  
+
     // If "Show All Mobs" is checked, skip all filters except the name filter
     if (filters.showAllMobs) {
-      filtered = mobData.filter(mob => 
+      filtered = mobData.filter(mob =>
         filters.mobName ? mob.name.toLowerCase().includes(filters.mobName.toLowerCase()) : true
       );
     }
-  
+
     // Sort the filtered results by HP per level
     const sorted = filtered.sort((a, b) => {
       if (a.hpPerLevel === 0 && b.hpPerLevel === 0) return 0;
@@ -147,7 +176,7 @@ const Layout = () => {
       if (b.hpPerLevel === 0) return -1;
       return a.hpPerLevel - b.hpPerLevel;
     });
-  
+
     setFilteredResults(sorted);
   };
 
@@ -159,18 +188,18 @@ const Layout = () => {
           description='Use this interface to filter mobs by name, HP, location, type, and damage type.'
         />
       </Box>
-      
+
       <Paper withBorder p="xl" style={{ width: '100%' }}>
         <Grid gutter="xl">
           <Grid.Col span={{ base: 12, md: 4 }}>
-            <MobFilterUI 
+            <MobFilterUI
               locations={locations}
               mobTypes={mobTypes}
               damageTypes={damageTypes}
               onApplyFilters={handleFilter}
             />
           </Grid.Col>
-          
+
           <Grid.Col span={{ base: 12, md: 8 }}>
             <OutputDisplay results={filteredResults} />
           </Grid.Col>
