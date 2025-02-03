@@ -109,6 +109,23 @@ const Layout = () => {
   const handleFilter = (filters: FilterValues) => {
     let filtered = [...mobData];
 
+    // If no filters are applied, return an empty array to clear the output
+    if (
+      !filters.mobName &&
+      !filters.location &&
+      !filters.mobType &&
+      filters.mobDamage === 'All' &&
+      filters.mobCombat === 'All' &&
+      filters.minHp === undefined &&
+      filters.maxHp === undefined &&
+      !filters.showAllMobs &&
+      !filters.useHpRange &&
+      !filters.exclusiveDamageType
+    ) {
+      setFilteredResults([]); // Clear the output
+      return;
+    }
+
     // Apply mobName filter first (ignores all other filters)
     if (filters.mobName) {
       filtered = filtered.filter(mob =>

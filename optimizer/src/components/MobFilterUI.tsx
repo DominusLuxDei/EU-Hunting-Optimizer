@@ -9,7 +9,7 @@ interface MobFilterUIProps {
   onApplyFilters: (filters: FilterValues) => void;
 }
 
-const MobFilterUI = ({ locations, damageTypes, onApplyFilters }: MobFilterUIProps) => {
+const MobFilterUI = ({ locations, mobTypes, damageTypes, onApplyFilters }: MobFilterUIProps) => {
   const [filters, setFilters] = useState<FilterValues>({
     mobName: '',
     location: '',
@@ -28,30 +28,25 @@ const MobFilterUI = ({ locations, damageTypes, onApplyFilters }: MobFilterUIProp
   };
 
   const handleReset = () => {
-    setFilters({
+    // Reset filters to their initial state
+    const resetFilters: FilterValues = {
       mobName: '',
-      location: '',
-      mobType: '',
+      location: '', // Clear location
+      mobType: '', // Clear mob type
       mobDamage: 'All', // Reset Damage Type to "All"
-      mobCombat: 'All',
-      minHp: undefined,
-      maxHp: undefined,
-      showAllMobs: false,
-      useHpRange: false,
-      exclusiveDamageType: false,
-    });
-    onApplyFilters({
-      mobName: '',
-      location: '',
-      mobType: '',
-      mobDamage: 'All', // Reset Damage Type to "All"
-      mobCombat: 'All',
-      minHp: undefined,
-      maxHp: undefined,
-      showAllMobs: false,
-      useHpRange: false,
-      exclusiveDamageType: false,
-    });
+      mobCombat: 'All', // Reset Combat Type to "All"
+      minHp: undefined, // Clear HP range
+      maxHp: undefined, // Clear HP range
+      showAllMobs: false, // Uncheck "Show All Mobs"
+      useHpRange: false, // Uncheck "Use HP Range"
+      exclusiveDamageType: false, // Uncheck "Exclusive Damage Type"
+    };
+
+    // Update the state to reflect the reset
+    setFilters(resetFilters);
+
+    // Pass empty filters to the parent component to clear the results
+    onApplyFilters(resetFilters);
   };
 
   // Sort locations alphabetically
@@ -152,8 +147,8 @@ const MobFilterUI = ({ locations, damageTypes, onApplyFilters }: MobFilterUIProp
           label="Location"
           placeholder="Select location"
           data={sortedLocations.map(location => ({ value: location, label: location }))}
-          value={filters.location}
-          onChange={(value) => setFilters({ ...filters, location: value || '' })}
+          value={filters.location} // Bind to the location filter
+          onChange={(value) => setFilters({ ...filters, location: value || '' })} // Clear if undefined
           clearable
         />
 
@@ -162,8 +157,8 @@ const MobFilterUI = ({ locations, damageTypes, onApplyFilters }: MobFilterUIProp
           label="Mob Type"
           placeholder="Select type"
           data={mobTypeOptions}
-          value={filters.mobType}
-          onChange={(value) => setFilters({ ...filters, mobType: value || '' })}
+          value={filters.mobType} // Bind to the mob type filter
+          onChange={(value) => setFilters({ ...filters, mobType: value || '' })} // Clear if undefined
           clearable
         />
 
@@ -187,8 +182,8 @@ const MobFilterUI = ({ locations, damageTypes, onApplyFilters }: MobFilterUIProp
           label="Mob Combat Type"
           placeholder="Select combat type"
           data={combatTypeOptions}
-          value={filters.mobCombat}
-          onChange={(value) => setFilters({ ...filters, mobCombat: value || 'All' })}
+          value={filters.mobCombat} // Default value is "All"
+          onChange={(value) => setFilters({ ...filters, mobCombat: value || 'All' })} // Reset to "All" if cleared
           clearable
         />
 
