@@ -101,7 +101,6 @@ const Layout = () => {
   const handleFilter = (filters: FilterValues) => {
     let filtered = [...mobData];
 
-    // Apply filters cumulatively
     if (filters.mobName) {
       filtered = filtered.filter(mob =>
         mob.name.toLowerCase().includes(filters.mobName.toLowerCase())
@@ -120,7 +119,7 @@ const Layout = () => {
     }
 
     if (filters.mobDamage && filters.mobDamage !== 'ALL') {
-      const selectedDamageType = filters.mobDamage.toLowerCase(); // e.g., "stb", "acd"
+      const selectedDamageType = filters.mobDamage.toLowerCase();
       const damageColumns = ['stb', 'cut', 'imp', 'pen', 'shr', 'brn', 'cld', 'acd', 'elc'] as const;
 
       if (!damageColumns.includes(selectedDamageType as typeof damageColumns[number])) {
@@ -128,21 +127,18 @@ const Layout = () => {
       }
 
       if (filters.exclusiveDamageType) {
-        // Exclusive damage type filter: mob must ONLY have the selected damage type
         filtered = filtered.filter(mob => {
-          const selectedColumn = selectedDamageType as keyof CombinedMob; // e.g., "stb"
+          const selectedColumn = selectedDamageType as keyof CombinedMob;
           const otherColumns = damageColumns.filter(col => col !== selectedDamageType);
 
-          // Ensure the selected column has a value > 0 and all other columns have 0
           return (
-            (Number(mob[selectedColumn]) || 0) > 0 && // Cast to number
-            otherColumns.every(col => (Number(mob[col as keyof CombinedMob]) || 0) === 0) // Cast to number
+            (Number(mob[selectedColumn]) || 0) > 0 &&
+            otherColumns.every(col => (Number(mob[col as keyof CombinedMob]) || 0) === 0)
           );
         });
       } else {
-        // Non-exclusive damage type filter: mob can have the selected damage type along with others
         filtered = filtered.filter(mob => {
-          return (Number(mob[selectedDamageType as keyof CombinedMob]) || 0) > 0; // Cast to number
+          return (Number(mob[selectedDamageType as keyof CombinedMob]) || 0) > 0;
         });
       }
     }
@@ -153,23 +149,30 @@ const Layout = () => {
       });
     }
 
-    if (filters.minHp !== undefined || filters.maxHp !== undefined) {
-      filtered = filtered.filter(mob => {
-        const hp = mob.health;
-        const min = filters.minHp ?? 0;
-        const max = filters.maxHp ?? Infinity;
-        return hp >= min && hp <= max;
-      });
+    // Handle HP filtering
+    if (filters.useHpRange) {
+      // HP Range Mode: Filter mobs within the specified range (inclusive)
+      if (filters.minHp !== undefined || filters.maxHp !== undefined) {
+        filtered = filtered.filter(mob => {
+          const hp = mob.health;
+          const min = filters.minHp ?? 0; // Default to 0 if minHp is undefined
+          const max = filters.maxHp ?? Infinity; // Default to Infinity if maxHp is undefined
+          return hp >= min && hp <= max;
+        });
+      }
+    } else {
+      // Exact HP Mode: Filter mobs with exactly the specified HP
+      if (filters.minHp !== undefined) {
+        filtered = filtered.filter(mob => mob.health === filters.minHp);
+      }
     }
 
-    // If "Show All Mobs" is checked, skip all filters except the name filter
     if (filters.showAllMobs) {
       filtered = mobData.filter(mob =>
         filters.mobName ? mob.name.toLowerCase().includes(filters.mobName.toLowerCase()) : true
       );
     }
 
-    // Sort the filtered results by HP per level
     const sorted = filtered.sort((a, b) => {
       if (a.hpPerLevel === 0 && b.hpPerLevel === 0) return 0;
       if (a.hpPerLevel === 0) return 1;

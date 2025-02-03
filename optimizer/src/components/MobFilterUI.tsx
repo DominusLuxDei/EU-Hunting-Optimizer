@@ -1,5 +1,3 @@
-// MobFilterUI.tsx
-
 import { useState } from 'react';
 import { Select, Checkbox, TextInput, Button, Group, Box, NumberInput, Stack } from '@mantine/core';
 import { FilterValues } from './types';
@@ -58,6 +56,12 @@ const MobFilterUI = ({ locations, mobTypes, damageTypes, onApplyFilters }: MobFi
 
   // Sort locations alphabetically
   const sortedLocations = [...locations].sort((a, b) => a.localeCompare(b));
+
+  // Sort damage types: "ALL" first, then alphabetical
+  const sortedDamageTypes = [...damageTypes]
+    .filter(damage => damage !== 'ALL') // Remove "ALL"
+    .sort((a, b) => a.localeCompare(b)); // Sort alphabetically
+  sortedDamageTypes.unshift('ALL'); // Add "ALL" back at the beginning
 
   // Define the correct mob type options
   const mobTypeOptions = [
@@ -173,7 +177,7 @@ const MobFilterUI = ({ locations, mobTypes, damageTypes, onApplyFilters }: MobFi
         <Select
           label="Damage Type"
           placeholder="Select damage type"
-          data={damageTypes.map(damage => ({ value: damage, label: damage }))}
+          data={sortedDamageTypes.map(damage => ({ value: damage, label: damage }))}
           value={filters.mobDamage}
           onChange={(value) => setFilters({ ...filters, mobDamage: value || 'ALL' })}
           clearable
