@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
-  "homepage": "https://zappaccudda.github.io/EU-Hunting-Optimizer",
+  "homepage": "https://dominusluxdei.github.io/EU-Hunting-Optimizer/",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
