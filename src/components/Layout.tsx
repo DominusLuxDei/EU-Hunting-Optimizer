@@ -1,10 +1,39 @@
-import { Box, Container, Grid, Paper } from "@mantine/core";
+import { ActionIcon, Box, Container, Flex, Grid, Paper, useMantineColorScheme, useMantineTheme } from "@mantine/core";
 import { useState, useEffect } from "react";
 import Papa from 'papaparse';
 import TitleDescription from "./TitleDescription";
 import MobFilterUI from "./MobFilterUI";
 import OutputDisplay from "./OutputDisplay";
 import { CombinedMob, FilterValues } from "./types";
+import { IconMoonFilled, IconSunFilled } from "@tabler/icons-react";
+import { useToggle } from "@mantine/hooks";
+
+const DarkModeButton = () => {
+    const [value, toggle] = useToggle(['light', 'dark'])
+    const { setColorScheme, clearColorScheme } = useMantineColorScheme();
+    
+    useEffect(() => {
+        value == 'dark' 
+        ? setColorScheme('dark')
+        : setColorScheme('light')
+    }, [value])
+
+    return (
+        <Flex justify={'flex-end'} w={'100%'}>
+            <ActionIcon 
+                variant={'transparent'} 
+                color={value == 'light' ? 'gray' : 'yellow'} 
+                size={'xl'}
+                onClick={() => toggle()}
+            >
+                {value == 'light' 
+                    ? <IconMoonFilled size={36} />
+                    : <IconSunFilled size={36} />
+                }
+            </ActionIcon>
+        </Flex>
+    )
+}
 
 const Layout = () => {
   const [filteredResults, setFilteredResults] = useState<CombinedMob[]>([]);
@@ -217,6 +246,7 @@ const Layout = () => {
 
   return (
     <Container fluid p="xl" style={{ minHeight: '100vh' }}>
+      <DarkModeButton />
       <Box mb="xl" style={{ textAlign: 'center' }}>
         <TitleDescription
           title='Mob Filter UI'

@@ -1,11 +1,12 @@
-import Layout from './components/Layout';
+import { Box } from "@mantine/core";
+import Layout from "./components/Layout";
 
 const App = () => {
-  return (
-    <div>
-      <Layout />
-    </div>
-  );
+	return (
+		<Box>
+			<Layout />
+		</Box>
+	);
 };
 
 export default App;
