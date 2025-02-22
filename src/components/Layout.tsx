@@ -138,32 +138,38 @@ const Layout = () => {
   const handleFilter = (filters: FilterValues) => {
     let filtered = [...mobData];
   
-    // If no filters are applied, return an empty array to clear the output
-    if (
-      !filters.mobName &&
-      !filters.location &&
-      !filters.mobType &&
-      filters.mobDamage === 'All' &&
-      filters.mobCombat === 'All' &&
-      filters.minHp === undefined &&
-      filters.maxHp === undefined &&
-      !filters.showAllMobs &&
-      !filters.useHpRange &&
-      !filters.exclusiveDamageType
-    ) {
-      setFilteredResults([]); // Clear the output
+    // If "Show All Mobs" is checked, return all mobs and ignore other filters
+    if (filters.showAllMobs) {
+      const sorted = [...mobData].sort((a, b) => {
+        if (a.hpPerLevel === 0 && b.hpPerLevel === 0) return 0;
+        if (a.hpPerLevel === 0) return 1;
+        if (b.hpPerLevel === 0) return -1;
+        return a.hpPerLevel - b.hpPerLevel;
+      });
+      setFilteredResults(sorted);
       return;
     }
   
-    // Apply mobName filter first (ignores all other filters)
+    // Apply mobName filter first (overrides all other filters except "Show All Mobs")
     if (filters.mobName) {
       filtered = filtered.filter(mob =>
         mob.name.toLowerCase().includes(filters.mobName.toLowerCase())
       );
+  
+      // Sort the filtered results by HP per level
+      const sorted = filtered.sort((a, b) => {
+        if (a.hpPerLevel === 0 && b.hpPerLevel === 0) return 0;
+        if (a.hpPerLevel === 0) return 1;
+        if (b.hpPerLevel === 0) return -1;
+        return a.hpPerLevel - b.hpPerLevel;
+      });
+  
+      setFilteredResults(sorted);
+      return;
     }
   
-    // Apply other filters only if mobName is not active
-    if (filters.location) { 
+    // Apply other filters only if neither "Show All Mobs" nor "mobName" is active
+    if (filters.location) {
       filtered = filtered.filter(mob => mob.location === filters.location);
     }
   
@@ -221,12 +227,6 @@ const Layout = () => {
       if (filters.minHp !== undefined) {
         filtered = filtered.filter(mob => mob.health === filters.minHp);
       }
-    }
-  
-    if (filters.showAllMobs) {
-      filtered = mobData.filter(mob =>
-        filters.mobName ? mob.name.toLowerCase().includes(filters.mobName.toLowerCase()) : true
-      );
     }
   
     // Always sort the filtered results by HP per level
