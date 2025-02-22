@@ -137,7 +137,7 @@ const Layout = () => {
 
   const handleFilter = (filters: FilterValues) => {
     let filtered = [...mobData];
-
+  
     // If no filters are applied, return an empty array to clear the output
     if (
       !filters.mobName &&
@@ -154,43 +154,39 @@ const Layout = () => {
       setFilteredResults([]); // Clear the output
       return;
     }
-
+  
     // Apply mobName filter first (ignores all other filters)
     if (filters.mobName) {
       filtered = filtered.filter(mob =>
         mob.name.toLowerCase().includes(filters.mobName.toLowerCase())
       );
-
-      // Return early if mobName filter is active (ignore other filters)
-      setFilteredResults(filtered);
-      return;
     }
-
+  
     // Apply other filters only if mobName is not active
-    if (filters.location) {
+    if (filters.location) { 
       filtered = filtered.filter(mob => mob.location === filters.location);
     }
-
+  
     if (filters.mobType) {
       filtered = filtered.filter(mob => {
         const firstWord = mob.type.split(' ')[0];
         return firstWord === filters.mobType;
       });
     }
-
+  
     if (filters.mobDamage && filters.mobDamage !== 'All') {
       const selectedDamageType = filters.mobDamage.toLowerCase();
       const damageColumns = ['stb', 'cut', 'imp', 'pen', 'shr', 'brn', 'cld', 'acd', 'elc'] as const;
-
+  
       if (!damageColumns.includes(selectedDamageType as typeof damageColumns[number])) {
         throw new Error(`Invalid damage type: ${selectedDamageType}`);
       }
-
+  
       if (filters.exclusiveDamageType) {
         filtered = filtered.filter(mob => {
           const selectedColumn = selectedDamageType as keyof CombinedMob;
           const otherColumns = damageColumns.filter(col => col !== selectedDamageType);
-
+  
           return (
             (Number(mob[selectedColumn]) || 0) > 0 &&
             otherColumns.every(col => (Number(mob[col as keyof CombinedMob]) || 0) === 0)
@@ -202,13 +198,13 @@ const Layout = () => {
         });
       }
     }
-
+  
     if (filters.mobCombat && filters.mobCombat !== 'All') {
       filtered = filtered.filter(mob => {
         return mob.combat === filters.mobCombat;
       });
     }
-
+  
     // Handle HP filtering
     if (filters.useHpRange) {
       // HP Range Mode: Filter mobs within the specified range (inclusive)
@@ -221,26 +217,26 @@ const Layout = () => {
         });
       }
     } else {
-      // Exact HP Mode: Filter mobs with exactly the specified HP
+      // Exact HP Mode: Filter mobs with exact HP value
       if (filters.minHp !== undefined) {
         filtered = filtered.filter(mob => mob.health === filters.minHp);
       }
     }
-
+  
     if (filters.showAllMobs) {
       filtered = mobData.filter(mob =>
         filters.mobName ? mob.name.toLowerCase().includes(filters.mobName.toLowerCase()) : true
       );
     }
-
-    // Sort the filtered results by HP per level
+  
+    // Always sort the filtered results by HP per level
     const sorted = filtered.sort((a, b) => {
       if (a.hpPerLevel === 0 && b.hpPerLevel === 0) return 0;
       if (a.hpPerLevel === 0) return 1;
       if (b.hpPerLevel === 0) return -1;
       return a.hpPerLevel - b.hpPerLevel;
     });
-
+  
     setFilteredResults(sorted);
   };
 
@@ -253,7 +249,7 @@ const Layout = () => {
           description='This goal of this app is to show the best skilling mobs based on criteria you chose Ie: HP, location, or looter type. 
           To use this app, select any one input or multiple inputs to be more exact. 
           Then apply filters and a list of mobs that meet your criteria will be displayed and sorted based on their HP/Lvl ratio (Lower is better for skilling).
-          In the outputted mobs list you can double click to get a popout menu that gives more information such as aggression level.'
+          In the filtered results list you can double click any mob to get a popout menu that gives more information such as aggression level.'
         />
       </Box>
 
