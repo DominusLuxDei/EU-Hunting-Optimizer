@@ -9,7 +9,7 @@ import { IconMoonFilled, IconSunFilled } from "@tabler/icons-react";
 import { useToggle } from "@mantine/hooks";
 
 const DarkModeButton = () => {
-    const [value, toggle] = useToggle(['light', 'dark'])
+    const [value, toggle] = useToggle(['dark', 'light'])
     const { setColorScheme, clearColorScheme } = useMantineColorScheme();
     
     useEffect(() => {
@@ -236,7 +236,7 @@ const Layout = () => {
   
     setFilteredResults(sorted);
   };
-  
+
   return (
     <Container fluid p="xl" style={{ minHeight: '100vh' }}>
       <DarkModeButton />
