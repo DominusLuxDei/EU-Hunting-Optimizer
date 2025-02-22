@@ -41,14 +41,14 @@ const MobFilterUI = ({ locations, damageTypes, onApplyFilters }: MobFilterUIProp
       useHpRange: false, // Uncheck "Use HP Range"
       exclusiveDamageType: false, // Uncheck "Exclusive Damage Type"
     };
-
+    
     // Update the state to reflect the reset
     setFilters(resetFilters);
-
-    // Pass empty filters to the parent component to clear the results
+    
+    // Pass the reset filters to the parent component
     onApplyFilters(resetFilters);
   };
-
+  
   // Sort locations alphabetically
   const sortedLocations = [...locations].sort((a, b) => a.localeCompare(b));
 

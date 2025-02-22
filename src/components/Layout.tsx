@@ -150,25 +150,29 @@ const Layout = () => {
       return;
     }
   
-    // Apply mobName filter first (overrides all other filters except "Show All Mobs")
+    // If all filters are reset, clear the filtered results
+    if (
+      !filters.mobName &&
+      !filters.location &&
+      !filters.mobType &&
+      filters.mobDamage === 'All' &&
+      filters.mobCombat === 'All' &&
+      filters.minHp === undefined &&
+      filters.maxHp === undefined &&
+      !filters.useHpRange &&
+      !filters.exclusiveDamageType
+    ) {
+      setFilteredResults([]); // Clear the results
+      return;
+    }
+  
+    // Apply other filters as usual
     if (filters.mobName) {
       filtered = filtered.filter(mob =>
         mob.name.toLowerCase().includes(filters.mobName.toLowerCase())
       );
-  
-      // Sort the filtered results by HP per level
-      const sorted = filtered.sort((a, b) => {
-        if (a.hpPerLevel === 0 && b.hpPerLevel === 0) return 0;
-        if (a.hpPerLevel === 0) return 1;
-        if (b.hpPerLevel === 0) return -1;
-        return a.hpPerLevel - b.hpPerLevel;
-      });
-  
-      setFilteredResults(sorted);
-      return;
     }
   
-    // Apply other filters only if neither "Show All Mobs" nor "mobName" is active
     if (filters.location) {
       filtered = filtered.filter(mob => mob.location === filters.location);
     }
@@ -206,14 +210,10 @@ const Layout = () => {
     }
   
     if (filters.mobCombat && filters.mobCombat !== 'All') {
-      filtered = filtered.filter(mob => {
-        return mob.combat === filters.mobCombat;
-      });
+      filtered = filtered.filter(mob => mob.combat === filters.mobCombat);
     }
   
-    // Handle HP filtering
     if (filters.useHpRange) {
-      // HP Range Mode: Filter mobs within the specified range (inclusive)
       if (filters.minHp !== undefined || filters.maxHp !== undefined) {
         filtered = filtered.filter(mob => {
           const hp = mob.health;
@@ -222,11 +222,8 @@ const Layout = () => {
           return hp >= min && hp <= max;
         });
       }
-    } else {
-      // Exact HP Mode: Filter mobs with exact HP value
-      if (filters.minHp !== undefined) {
-        filtered = filtered.filter(mob => mob.health === filters.minHp);
-      }
+    } else if (filters.minHp !== undefined) {
+      filtered = filtered.filter(mob => mob.health === filters.minHp);
     }
   
     // Always sort the filtered results by HP per level
@@ -239,7 +236,7 @@ const Layout = () => {
   
     setFilteredResults(sorted);
   };
-
+  
   return (
     <Container fluid p="xl" style={{ minHeight: '100vh' }}>
       <DarkModeButton />
