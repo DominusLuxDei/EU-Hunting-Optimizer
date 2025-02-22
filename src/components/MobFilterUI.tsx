@@ -154,8 +154,8 @@ const MobFilterUI = ({ locations, damageTypes, onApplyFilters }: MobFilterUIProp
 
         {/* Mob Type Filter */}
         <Select
-          label="Mob Type"
-          placeholder="Select type"
+          label="Mob Looter Skill"
+          placeholder="Select Looter Skill"
           data={mobTypeOptions}
           value={filters.mobType} // Bind to the mob type filter
           onChange={(value) => setFilters({ ...filters, mobType: value || '' })} // Clear if undefined

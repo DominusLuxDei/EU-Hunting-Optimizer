@@ -45,11 +45,11 @@ const Layout = () => {
   useEffect(() => {
     const loadData = async () => {
       try {
-        const mobsResponse = await fetch('mobs.csv');
+        const mobsResponse = await fetch('/EU-Hunting-Optimizer/mobs.csv');
         const mobsText = await mobsResponse.text();
         const mobsResult = Papa.parse(mobsText, { header: true });
 
-        const levelsResponse = await fetch('levels.csv');
+        const levelsResponse = await fetch('/EU-Hunting-Optimizer/levels.csv');
         const levelsText = await levelsResponse.text();
         const levelsResult = Papa.parse(levelsText, { header: true });
 
@@ -249,8 +249,11 @@ const Layout = () => {
       <DarkModeButton />
       <Box mb="xl" style={{ textAlign: 'center' }}>
         <TitleDescription
-          title='Mob Filter UI'
-          description='Use this interface to filter mobs by name, HP, location, type, and damage type.'
+          title="Dominus Lux Dei's Hunting Skill Optimizer"
+          description='This goal of this app is to show the best skilling mobs based on criteria you chose Ie: HP, location, or looter type. 
+          To use this app, select any one input or multiple inputs to be more exact. 
+          Then apply filters and a list of mobs that meet your criteria will be displayed and sorted based on their HP/Lvl ratio (Lower is better for skilling).
+          In the outputted mobs list you can double click to get a popout menu that gives more information such as aggression level.'
         />
       </Box>
 
