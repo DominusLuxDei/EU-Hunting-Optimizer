@@ -7,33 +7,29 @@ import OutputDisplay from "./OutputDisplay";
 import { CombinedMob, FilterValues } from "./types";
 import { IconMoonFilled, IconSunFilled } from "@tabler/icons-react";
 import { useToggle } from "@mantine/hooks";
+import ErrorBoundary from "./ErrorBoundary";
 
 const DarkModeButton = () => {
-    const [value, toggle] = useToggle(['dark', 'light'])
-    const { setColorScheme, clearColorScheme } = useMantineColorScheme();
-    
-    useEffect(() => {
-        value == 'dark' 
-        ? setColorScheme('dark')
-        : setColorScheme('light')
-    }, [value])
+  const [value, toggle] = useToggle(['dark', 'light']);
+  const { setColorScheme, clearColorScheme } = useMantineColorScheme();
 
-    return (
-        <Flex justify={'flex-end'} w={'100%'}>
-            <ActionIcon 
-                variant={'transparent'} 
-                color={value == 'light' ? 'gray' : 'yellow'} 
-                size={'xl'}
-                onClick={() => toggle()}
-            >
-                {value == 'light' 
-                    ? <IconMoonFilled size={36} />
-                    : <IconSunFilled size={36} />
-                }
-            </ActionIcon>
-        </Flex>
-    )
-}
+  useEffect(() => {
+    value === 'dark' ? setColorScheme('dark') : setColorScheme('light');
+  }, [value]);
+
+  return (
+    <Flex justify={'flex-end'} w={'100%'}>
+      <ActionIcon
+        variant={'transparent'}
+        color={value === 'light' ? 'gray' : 'yellow'}
+        size={'xl'}
+        onClick={() => toggle()}
+      >
+        {value === 'light' ? <IconMoonFilled size={36} /> : <IconSunFilled size={36} />}
+      </ActionIcon>
+    </Flex>
+  );
+};
 
 const Layout = () => {
   const [filteredResults, setFilteredResults] = useState<CombinedMob[]>([]);
@@ -59,9 +55,7 @@ const Layout = () => {
         const typeSet = new Set<string>();
 
         mobsResult.data.forEach((mob: any) => {
-          const levels = levelsResult.data.filter(
-            (level: any) => level.Creature === mob.Name
-          );
+          const levels = levelsResult.data.filter((level: any) => level.Creature === mob.Name);
 
           levels.forEach((level: any) => {
             const damageEntries = [
@@ -77,10 +71,10 @@ const Layout = () => {
             ];
 
             const damageTypes = damageEntries
-              .filter(entry => entry.value && entry.value !== '0')
-              .map(entry => `${entry.type} ${entry.value}%`);
+              .filter((entry) => entry.value && entry.value !== '0')
+              .map((entry) => `${entry.type} ${entry.value}%`);
 
-            damageTypes.forEach(dt => damageTypeSet.add(dt.split(' ')[0]));
+            damageTypes.forEach((dt) => damageTypeSet.add(dt.split(' ')[0]));
             locationSet.add(mob['Found on']);
             typeSet.add(mob['Mob Type']);
 
@@ -114,17 +108,21 @@ const Layout = () => {
 
         // Normalize damage types: Convert "ALL" to "All" and remove duplicates
         const normalizedDamageTypes = Array.from(damageTypeSet)
-          .map(type => type === 'ALL' ? 'All' : type) // Convert "ALL" to "All"
+          .map((type) => (type === 'ALL' ? 'All' : type)) // Convert "ALL" to "All"
           .filter(Boolean); // Remove falsy values
 
         // Sort damage types alphabetically and prepend "All"
         const sortedDamageTypes = normalizedDamageTypes
-          .filter(damage => damage !== 'All') // Remove "All"
+          .filter((damage) => damage !== 'All') // Remove "All"
           .sort((a, b) => a.localeCompare(b)); // Sort alphabetically
         sortedDamageTypes.unshift('All'); // Add "All" back at the beginning
 
+        // Add "All" to the locations list and remove duplicates and empty strings
+        const locationsWithAll = ['All', ...new Set(Array.from(locationSet).filter(location => location && location.trim()))];
+        console.log('Locations:', locationsWithAll); // Log the locations array
+
         setMobData(combined);
-        setLocations(Array.from(locationSet).filter(Boolean));
+        setLocations(locationsWithAll); // Use the updated locations array
         setMobTypes(Array.from(typeSet).filter(Boolean));
         setDamageTypes(sortedDamageTypes); // Use the updated damage types array
       } catch (error) {
@@ -153,7 +151,7 @@ const Layout = () => {
     // If all filters are reset, clear the filtered results
     if (
       !filters.mobName &&
-      !filters.location &&
+      filters.location === 'All' && // Check if location is "All"
       !filters.mobType &&
       filters.mobDamage === 'All' &&
       filters.mobCombat === 'All' &&
@@ -168,17 +166,18 @@ const Layout = () => {
   
     // Apply other filters as usual
     if (filters.mobName) {
-      filtered = filtered.filter(mob =>
+      filtered = filtered.filter((mob) =>
         mob.name.toLowerCase().includes(filters.mobName.toLowerCase())
       );
     }
   
-    if (filters.location) {
-      filtered = filtered.filter(mob => mob.location === filters.location);
+    // Only apply location filter if not "All"
+    if (filters.location && filters.location !== 'All') {
+      filtered = filtered.filter((mob) => mob.location === filters.location);
     }
   
     if (filters.mobType) {
-      filtered = filtered.filter(mob => {
+      filtered = filtered.filter((mob) => {
         const firstWord = mob.type.split(' ')[0];
         return firstWord === filters.mobType;
       });
@@ -193,29 +192,29 @@ const Layout = () => {
       }
   
       if (filters.exclusiveDamageType) {
-        filtered = filtered.filter(mob => {
+        filtered = filtered.filter((mob) => {
           const selectedColumn = selectedDamageType as keyof CombinedMob;
-          const otherColumns = damageColumns.filter(col => col !== selectedDamageType);
+          const otherColumns = damageColumns.filter((col) => col !== selectedDamageType);
   
           return (
             (Number(mob[selectedColumn]) || 0) > 0 &&
-            otherColumns.every(col => (Number(mob[col as keyof CombinedMob]) || 0) === 0)
+            otherColumns.every((col) => (Number(mob[col as keyof CombinedMob]) || 0) === 0)
           );
         });
       } else {
-        filtered = filtered.filter(mob => {
+        filtered = filtered.filter((mob) => {
           return (Number(mob[selectedDamageType as keyof CombinedMob]) || 0) > 0;
         });
       }
     }
   
     if (filters.mobCombat && filters.mobCombat !== 'All') {
-      filtered = filtered.filter(mob => mob.combat === filters.mobCombat);
+      filtered = filtered.filter((mob) => mob.combat === filters.mobCombat);
     }
   
     if (filters.useHpRange) {
       if (filters.minHp !== undefined || filters.maxHp !== undefined) {
-        filtered = filtered.filter(mob => {
+        filtered = filtered.filter((mob) => {
           const hp = mob.health;
           const min = filters.minHp ?? 0; // Default to 0 if minHp is undefined
           const max = filters.maxHp ?? Infinity; // Default to Infinity if maxHp is undefined
@@ -223,7 +222,7 @@ const Layout = () => {
         });
       }
     } else if (filters.minHp !== undefined) {
-      filtered = filtered.filter(mob => mob.health === filters.minHp);
+      filtered = filtered.filter((mob) => mob.health === filters.minHp);
     }
   
     // Always sort the filtered results by HP per level
@@ -238,35 +237,37 @@ const Layout = () => {
   };
 
   return (
-    <Container fluid p="xl" style={{ minHeight: '100vh' }}>
-      <DarkModeButton />
-      <Box mb="xl" style={{ textAlign: 'center' }}>
-        <TitleDescription
-          title="Dominus Lux Dei's Hunting Skill Optimizer"
-          description='This goal of this app is to show the best skilling mobs based on criteria you chose Ie: HP, location, or looter type. 
-          To use this app, select any one input or multiple inputs to be more exact. 
-          Then apply filters and a list of mobs that meet your criteria will be displayed and sorted based on their HP/Lvl ratio (Lower is better for skilling).
-          In the filtered results list you can double click any mob to get a popout menu that gives more information such as aggression level.'
-        />
-      </Box>
+    <ErrorBoundary>
+      <Container fluid p="xl" style={{ minHeight: '100vh' }}>
+        <DarkModeButton />
+        <Box mb="xl" style={{ textAlign: 'center' }}>
+          <TitleDescription
+            title="Dominus Lux Dei's Hunting Skill Optimizer"
+            description='This goal of this app is to show the best skilling mobs based on criteria you chose Ie: HP, location, or looter type. 
+            To use this app, select any one input or multiple inputs to be more exact. 
+            Then apply filters and a list of mobs that meet your criteria will be displayed and sorted based on their HP/Lvl ratio (Lower is better for skilling).
+            In the filtered results list you can double click any mob to get a popout menu that gives more information such as aggression level.'
+          />
+        </Box>
 
-      <Paper withBorder p="xl" style={{ width: '100%' }}>
-        <Grid gutter="xl">
-          <Grid.Col span={{ base: 12, md: 4 }}>
-            <MobFilterUI
-              locations={locations}
-              mobTypes={mobTypes}
-              damageTypes={damageTypes}
-              onApplyFilters={handleFilter}
-            />
-          </Grid.Col>
+        <Paper withBorder p="xl" style={{ width: '100%' }}>
+          <Grid gutter="xl">
+            <Grid.Col span={{ base: 12, md: 4 }}>
+              <MobFilterUI
+                locations={locations}
+                mobTypes={mobTypes}
+                damageTypes={damageTypes}
+                onApplyFilters={handleFilter}
+              />
+            </Grid.Col>
 
-          <Grid.Col span={{ base: 12, md: 8 }}>
-            <OutputDisplay results={filteredResults} />
-          </Grid.Col>
-        </Grid>
-      </Paper>
-    </Container>
+            <Grid.Col span={{ base: 12, md: 8 }}>
+              <OutputDisplay results={filteredResults} />
+            </Grid.Col>
+          </Grid>
+        </Paper>
+      </Container>
+    </ErrorBoundary>
   );
 };
 
