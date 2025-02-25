@@ -1,6 +1,7 @@
-import { Title, Button, Flex, Container, Box } from '@mantine/core';
+import { Title, Button, Flex, Container, Box, Text } from '@mantine/core';
 import { Link } from 'react-router-dom'; // Import Link for navigation
 import DarkModeButton from './DarkModeButton'; // Import the DarkModeButton
+import CodexOptimizer from './CodexOptimizer'; // Import the CodexOptimizer component
 
 const CodexOptimizerPage = () => {
   return (
@@ -25,10 +26,16 @@ const CodexOptimizerPage = () => {
         <DarkModeButton /> {/* Add the DarkModeButton for consistency */}
       </Flex>
 
+      {/* Title and Description */}
       <Box mb="xl" style={{ textAlign: 'center' }}>
         <Title order={1}>Codex Optimizer</Title>
-        <p>This is a placeholder for the Codex Optimizer page.</p>
+        <Text mt="sm" color="dimmed">
+          This tool helps you calculate the cost to reach the next Meta rank (every 5 ranks) for each creature.
+        </Text>
       </Box>
+
+      {/* Render the CodexOptimizer component */}
+      <CodexOptimizer />
     </Container>
   );
 };

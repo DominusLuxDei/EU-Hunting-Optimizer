@@ -1,17 +1,14 @@
 import { Box } from "@mantine/core";
-import { Routes, Route } from "react-router-dom"; // Import Routes and Route
+import { Routes, Route } from "react-router-dom";
 import Layout from "./components/Layout";
-import CodexOptimizerPage from "./components/CodexOptimizerPage"; // Corrected import path
+import CodexOptimizerPage from "./components/CodexOptimizerPage"; // Updated import
 
 const App = () => {
   return (
     <Box>
       <Routes>
-        {/* Route for the main page */}
         <Route path="/" element={<Layout />} />
-
-        {/* Route for the Codex Optimizer page */}
-        <Route path="/EU-Codex-Optimizer" element={<CodexOptimizerPage />} />
+        <Route path="/EU-Codex-Optimizer" element={<CodexOptimizerPage />} /> {/* Updated to use CodexOptimizerPage */}
       </Routes>
     </Box>
   );
