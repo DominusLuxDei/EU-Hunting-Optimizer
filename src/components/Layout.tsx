@@ -1,4 +1,4 @@
-import { ActionIcon, Box, Container, Flex, Grid, Paper, useMantineColorScheme, useMantineTheme } from "@mantine/core";
+import { ActionIcon, Box, Container, Flex, Grid, Paper, useMantineColorScheme, useMantineTheme, Button } from "@mantine/core";
 import { useState, useEffect } from "react";
 import Papa from 'papaparse';
 import TitleDescription from "./TitleDescription";
@@ -8,28 +8,8 @@ import { CombinedMob, FilterValues } from "./types";
 import { IconMoonFilled, IconSunFilled } from "@tabler/icons-react";
 import { useToggle } from "@mantine/hooks";
 import ErrorBoundary from "./ErrorBoundary";
-
-const DarkModeButton = () => {
-  const [value, toggle] = useToggle(['dark', 'light']);
-  const { setColorScheme, clearColorScheme } = useMantineColorScheme();
-
-  useEffect(() => {
-    value === 'dark' ? setColorScheme('dark') : setColorScheme('light');
-  }, [value]);
-
-  return (
-    <Flex justify={'flex-end'} w={'100%'}>
-      <ActionIcon
-        variant={'transparent'}
-        color={value === 'light' ? 'gray' : 'yellow'}
-        size={'xl'}
-        onClick={() => toggle()}
-      >
-        {value === 'light' ? <IconMoonFilled size={36} /> : <IconSunFilled size={36} />}
-      </ActionIcon>
-    </Flex>
-  );
-};
+import { Link } from 'react-router-dom'; // Import Link for navigation
+import DarkModeButton from './DarkModeButton'; // Import the DarkModeButton
 
 const Layout = () => {
   const [filteredResults, setFilteredResults] = useState<CombinedMob[]>([]);
@@ -239,7 +219,26 @@ const Layout = () => {
   return (
     <ErrorBoundary>
       <Container fluid p="xl" style={{ minHeight: '100vh' }}>
-        <DarkModeButton />
+        {/* Add the Codex Optimizer button and DarkModeButton in the top row */}
+        <Flex justify="space-between" align="center" mb="md">
+          <Button
+            component={Link}
+            to="/EU-Codex-Optimizer" // Navigate to the Codex Optimizer page
+            variant="outline"
+            size="lg" // Large size
+            style={{ 
+              marginLeft: '20px', 
+              fontSize: '18px', // Larger font size
+              padding: '12px 24px', // More padding
+              minWidth: '225px', // Set a minimum width to ensure the text fits
+              whiteSpace: 'nowrap', // Prevent text from wrapping
+            }}
+          >
+            Codex Optimizer
+          </Button>
+          <DarkModeButton /> {/* Add the DarkModeButton for consistency */}
+        </Flex>
+
         <Box mb="xl" style={{ textAlign: 'center' }}>
           <TitleDescription
             title="Dominus Lux Dei's Hunting Skill Optimizer"

@@ -141,7 +141,6 @@ const MobFilterUI = ({ locations, damageTypes, onApplyFilters }: MobFilterUIProp
         {/* Location Filter */}
         <Select
           label="Location"
-          placeholder="Select location"
           data={sortedLocations.map((location) => ({ value: location, label: location === 'All' ? 'All Locations' : location }))} // Renamed "All" to "All Locations"
           value={filters.location}
           onChange={(value) => setFilters({ ...filters, location: value || 'All' })}
@@ -151,7 +150,6 @@ const MobFilterUI = ({ locations, damageTypes, onApplyFilters }: MobFilterUIProp
         {/* Mob Type Filter */}
         <Select
           label="Mob Looter Skill"
-          placeholder="Select Looter Skill"
           data={mobTypeOptions}
           value={filters.mobType}
           onChange={(value) => setFilters({ ...filters, mobType: value || '' })}
@@ -161,7 +159,6 @@ const MobFilterUI = ({ locations, damageTypes, onApplyFilters }: MobFilterUIProp
         {/* Damage Type Filter */}
         <Select
           label="Damage Type"
-          placeholder="Select damage type"
           data={damageTypes.map((damage) => ({ value: damage, label: damage === 'All' ? 'All Damage Types' : damage }))} // Renamed "All" to "All Damage Types"
           value={filters.mobDamage}
           onChange={(value) => setFilters({ ...filters, mobDamage: value || 'All' })}
@@ -176,7 +173,6 @@ const MobFilterUI = ({ locations, damageTypes, onApplyFilters }: MobFilterUIProp
         {/* Combat Type Filter */}
         <Select
           label="Mob Combat Type"
-          placeholder="Select combat type"
           data={combatTypeOptions}
           value={filters.mobCombat}
           onChange={(value) => setFilters({ ...filters, mobCombat: value || 'All' })}
