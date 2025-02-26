@@ -24,7 +24,7 @@ const CodexOptimizer = () => {
         '/EU-Hunting-Optimizer/Codex-Arkadia-Costs.csv',
         '/EU-Hunting-Optimizer/Codex-Calypso_CP_Foma_Monria_Space-Costs.csv',
         '/EU-Hunting-Optimizer/Codex-Cyrene-Costs.csv',
-        '/EU-Hunting-Optimizer/Codex-Next Island_Ancient Greece=Costs.csv',
+        '/EU-Hunting-Optimizer/Codex-Next_Island_Ancient_Greece-Costs.csv',
         '/EU-Hunting-Optimizer/Codex-Toulan-Costs.csv',
       ];
 
